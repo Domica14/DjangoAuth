@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    container_name: MicroDB
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    container_name: AuthService
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  migrate:
+    build: .
+    command: python manage.py migrate
+    container_name: Migrate
+    volumes:
+      - .:/code
+    depends_on:
+      - db
