@@ -4,14 +4,16 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.middleware.csrf import get_token
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from django.views.decorators.csrf import csrf_exempt
 from .serializers import (
     SignUpSerializer,
     LoginSerializer,
     PasswordSerializer
 )
 
-
+@csrf_exempt
 class Login(APIView):
 
     @extend_schema(
@@ -22,6 +24,7 @@ class Login(APIView):
             user = authenticate(username=request.data.get('username'), password=request.data.get('password'))
             if user is not None:
                 refresh = RefreshToken.for_user(user)
+                csrfToken = get_token(request)
                 login(request, user)
                 return Response(
                     {
@@ -29,7 +32,8 @@ class Login(APIView):
                         'username': user.username,
                         'email': user.email,
                         'refresh': str(refresh),
-                        'access': str(refresh.access_token)
+                        'access': str(refresh.access_token),
+                        'csrfToken': csrfToken
                     },
                     status=status.HTTP_200_OK
                 )
