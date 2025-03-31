@@ -52,7 +52,7 @@ class SignUp(APIView):
                                         request.data.get('password')
                                         )
             user.save()
-            return Response('User creatred succesfully', status=status.HTTP_201_CREATED)
+            return Response('User created succesfully', status=status.HTTP_201_CREATED)
         except:
             return Response('Failed to create user', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
