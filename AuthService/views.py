@@ -6,16 +6,14 @@ from django.contrib.auth import authenticate, login
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.middleware.csrf import get_token
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from .serializers import (
     SignUpSerializer,
     LoginSerializer,
     PasswordSerializer
 )
 
-@csrf_exempt
 class Login(APIView):
-
     @extend_schema(
         request=LoginSerializer
     )
@@ -49,8 +47,8 @@ class SignUp(APIView):
     )
     def post(self, request):
         try:
-            user = User.objects.create_user(request.data.get('username'), 
-                                        request.data.get('email'), 
+            user = User.objects.create_user(request.data.get('username').lower(), 
+                                        request.data.get('email').lower(), 
                                         request.data.get('password')
                                         )
             user.save()
@@ -58,10 +56,10 @@ class SignUp(APIView):
         except:
             return Response('Failed to create user', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@extend_schema(
-    request=PasswordSerializer
-)
 class ChangePassword(APIView):
+    @extend_schema(
+        request=PasswordSerializer
+    )
     def put(self, request, email):
         try:
             user = User.objects.get(email=email)
